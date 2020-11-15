@@ -3,3 +3,5 @@ build/Release
 .env
 node_modules
 config/runtime.yaml
+screenshots_api_responses
+
