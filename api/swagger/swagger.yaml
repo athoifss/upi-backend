@@ -1,60 +1,108 @@
 swagger: "2.0"
 info:
   version: "0.0.1"
-  title: Hello World App
-# during dev, should point to your local machine
-host: localhost:10010
-# basePath prefixes all resource paths 
+  title: UPI Payment HackerEarth Freecharge
+host: localhost:3000
 basePath: /
-# 
 schemes:
-  # tip: remove http to make production-grade
   - http
   - https
-# format of bodies a client can send (Content-Type)
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+    description: |
+      The following syntax must be used in the 'Authorization' header :
+      "Bearer {token}"
 consumes:
   - application/json
-# format of the responses to the client (Accepts)
 produces:
   - application/json
+
 paths:
-  /hello:
-    # binds a127 app logic to a route
-    x-swagger-router-controller: hello_world
-    get:
-      description: Returns 'Hello' to the caller
-      # used as the method name of the controller
-      operationId: hello
+  /login:
+    x-swagger-router-controller: main_controller
+    post:
+      description: User login. Returns auth token if credentials are correct
+      tags:
+        - User
+      operationId: login
       parameters:
-        - name: name
-          in: query
-          description: The name of the person to whom to say hello
-          required: false
-          type: string
+        - name: loginCreds
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/Login"
       responses:
         "200":
           description: Success
           schema:
-            # a pointer to a definition
-            $ref: "#/definitions/HelloWorldResponse"
-        # responses may fall through to errors
+            $ref: "#/definitions/LoginResponse"
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"
-  /swagger:
-    x-swagger-pipe: swagger_raw
+            $ref: "#/definitions/Error"
+
+  /user:
+    x-swagger-router-controller: main_controller
+    post:
+      description: Register a new user
+      tags:
+        - User
+      operationId: register
+      parameters:
+        - name: user
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/NewUser"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/Success"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/Error"
 # complex objects have schema definitions
 definitions:
-  HelloWorldResponse:
+  Success:
     required:
       - message
     properties:
       message:
         type: string
-  ErrorResponse:
+  Error:
     required:
       - message
     properties:
       message:
         type: string
+
+  NewUser:
+    properties:
+      name:
+        type: string
+      username:
+        type: string
+      password:
+        type: string
+
+  Login:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+
+  LoginResponse:
+    properties:
+      username:
+        type: string
+      name:
+        type: string
+      token:
+        type: string
+   

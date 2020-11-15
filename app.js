@@ -1,23 +1,50 @@
-'use strict';
+"use strict";
+const swaggerTools = require("swagger-tools");
+const express = require("express");
+var yaml = require("js-yaml");
+var fs = require("fs");
+const auth = require("./api/helpers/auth");
+const cors = require("cors");
+const initDb = require("./api/helpers/db").initDb;
+const fileUpload = require("express-fileupload");
 
-var SwaggerExpress = require('swagger-express-mw');
-var app = require('express')();
-module.exports = app; // for testing
+const app = express();
 
-var config = {
-  appRoot: __dirname // required config
-};
+const swaggerDoc = fs.readFileSync("./api/swagger/swagger.yaml", "utf8");
+const swaggerConfig = yaml.safeLoad(swaggerDoc);
+const port = require("./config/config.json").port;
 
-SwaggerExpress.create(config, function(err, swaggerExpress) {
-  if (err) { throw err; }
+function logger(req, res, next) {
+  res.on("finish", () => {
+    console.log(`${req.method} : ${req.url} -> ${res.statusCode} ${res.statusMessage}`);
+  });
+  next();
+}
 
-  // install middleware
-  swaggerExpress.register(app);
+app.use(logger);
+app.use(cors());
+app.use(fileUpload());
 
-  var port = process.env.PORT || 10010;
-  app.listen(port);
+swaggerTools.initializeMiddleware(swaggerConfig, function (middleware) {
+  app.use(middleware.swaggerMetadata());
 
-  if (swaggerExpress.runner.swagger.paths['/hello']) {
-    console.log('try this:\ncurl http://127.0.0.1:' + port + '/hello?name=Scott');
-  }
+  var routerConfig = {
+    controllers: "./api/controllers",
+    useStubs: false,
+  };
+
+  app.use(
+    middleware.swaggerSecurity({
+      Bearer: auth.verifyToken,
+    })
+  );
+
+  app.use(middleware.swaggerRouter(routerConfig));
+
+  app.use(middleware.swaggerUi());
+  initDb(function (err) {
+    app.listen(port, function () {
+      console.log(`Started server on port: ${port}`);
+    });
+  });
 });
