@@ -1,6 +1,6 @@
 var client = require('mongodb').MongoClient
 const config = require("../../config/config.json");
-const url = `mongodb+srv://${config.user}:${config.password}@cluster0.tbiee.mongodb.net/${config.db}?retryWrites=true&w=majority`;
+const url = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.tbiee.mongodb.net/${config.db}?retryWrites=true&w=majority`;
 
 let _db;
 function initDb(callback) {

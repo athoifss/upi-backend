@@ -2,6 +2,7 @@
 const jwt = require("jsonwebtoken");
 const sharedSecret = "secretKetUpiPay";
 
+// Middleware function to check the token sent in header is valid
 exports.verifyToken = function (req, authOrSecDef, token, callback) {
   function sendError() {
     return req.res.status(403).json({
@@ -25,6 +26,8 @@ exports.verifyToken = function (req, authOrSecDef, token, callback) {
   }
 };
 
+
+// Create token on login or register
 exports.issueToken = function (user) {
   var token = jwt.sign({ ...user }, sharedSecret, {
     expiresIn: 1 * 24 * 60 * 60,

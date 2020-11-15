@@ -1,6 +1,5 @@
 {
     "port": 3000,
-    "user": "atifhossain",
-    "password": "housemd123",
-    "db": "upi"
+    "db": "upi",
+    "baseUrlUpload": "uploads"
 }

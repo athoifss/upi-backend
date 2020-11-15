@@ -1,4 +1,5 @@
 "use strict";
+require("dotenv").config();
 const swaggerTools = require("swagger-tools");
 const express = require("express");
 var yaml = require("js-yaml");
@@ -9,7 +10,6 @@ const initDb = require("./api/helpers/db").initDb;
 const fileUpload = require("express-fileupload");
 
 const app = express();
-
 const swaggerDoc = fs.readFileSync("./api/swagger/swagger.yaml", "utf8");
 const swaggerConfig = yaml.safeLoad(swaggerDoc);
 const port = require("./config/config.json").port;
