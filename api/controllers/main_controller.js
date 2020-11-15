@@ -55,6 +55,10 @@ exports.login = (req, res) => {
               if (isPassword) {
                 // Password Match
                 response = { _id: result._id, name: result.name };
+                //Check if csv record exits or not
+                if (result.csv.length == 0) {
+                  response.msg = "Please Upload CSV";
+                }
                 response.token = auth.issueToken({
                   _id: result._id,
                   name: result.name,
@@ -101,6 +105,7 @@ exports.register = (req, res) => {
         username: username.toLowerCase(),
         password: hashPassword,
         account_no: accountNumber,
+        csv: [],
       };
       dbo.collection("user").insertOne(insertData, (err, result) => {
         if (err) {
@@ -213,17 +218,29 @@ exports.upload = (req, res) => {
 
       // Insert each record into the datbase (transaction collection) with userId
       // And return avg monthly balance and Credit limit
+      // Also add each csv upload path to the user collection (csv array in each user document)
       const dbo = getDb();
       dbo.collection("transaction").insertMany(result, (err, result) => {
         if (err) {
           sendResp(req, res, 500, "Coult not add records");
         } else {
-          res.writeHead(200, {
-            "Content-Type": "application/json",
-          });
-          return res.end(
-            JSON.stringify({ AMB: mba, creditLimit: parseFloat(creditLimit.toFixed(2)) })
-          );
+          dbo
+            .collection("user")
+            .update(
+              { _id: ObjectId(req.auth._id) },
+              { $push: { csv: fullPath } },
+              (error2, result2) => {
+                if (error2) {
+                  sendResp(req, res, 500, "Coult not add records");
+                }
+                res.writeHead(200, {
+                  "Content-Type": "application/json",
+                });
+                return res.end(
+                  JSON.stringify({ AMB: mba, creditLimit: parseFloat(creditLimit.toFixed(2)) })
+                );
+              }
+            );
         }
       });
     });
